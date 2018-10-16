@@ -19,7 +19,7 @@ phases:
       - echo "Run unit tests"
 #      - python3 manage.py test
 
-  post-build:
+  post_build:
     commands:
       - echo "Create an app archive"
       - ls -la .
