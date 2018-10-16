@@ -28,4 +28,3 @@ artifacts:
   - "**/*"
   name:
     prod-provisioning-app-$(date +%y%m%d-%H%M%S)
-
