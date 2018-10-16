@@ -8,29 +8,23 @@ env:
 phases:
   install:
     commands:
-#      - echo "Install system packages"
-#      - export DEBIAN_FRONTEND=noninteractive
-#      - apt-get update && apt-get install -y zip
-      - echo "Setup VirtualEnv"
-      - python3 -m venv .venv
-      - . .venv/bin/activate
-      - echo "Install requirements"
-      - pip3 install -r requirements.txt
+    - echo "Setup VirtualEnv"
+    - python3 -m venv .venv
+    - . .venv/bin/activate
+    - echo "Install requirements"
+    - pip3 install -r requirements.txt
 
   build:
     commands:
-      - echo "Run unit tests"
-      - python3 manage.py test
+    - echo "Run unit tests"
+    - python3 manage.py test
 
   post_build:
     commands:
-      - rm -rf db.sqlite3 .git  # to exclude from the zipped artifact
-      # note: all the stages are executed, no matter whether the previous stage was failed (except the install)
-      #       so to skip the stage we have to check conditions (env vars)
-#      - if [ $CODEBUILD_BUILD_SUCCEEDING = 1 ]; then echo "Create an app archive (including .venv dir)"; zip -r app.zip . -x db.sqlite3 \*.git\*; fi
+    - rm -rf db.sqlite3 .git  # the quickest way to exclude from the zipped artifact
 
 artifacts:
   files:
-    - "**/*"
+  - "**/*"
   name:
     prod-provisioning-app-$(date +%y%m%d-%H%M%S)
