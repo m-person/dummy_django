@@ -21,7 +21,7 @@ phases:
 
   post_build:
     commands:
-    - rm -rf db.sqlite3 .git  # the quickest way to exclude from the zipped artifact
+    - rm -rf db.sqlite3 .git .venv # the quickest way to exclude from the zipped artifact
 
 artifacts:
   files:
