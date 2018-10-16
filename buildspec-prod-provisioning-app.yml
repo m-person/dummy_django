@@ -4,7 +4,6 @@ version: 0.2
 env:
   variables:
     ENVIRONMENT: "dev"
-  parameter-store:
 
 phases:
   install:
