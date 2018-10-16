@@ -1,3 +1,7 @@
 from django.test import TestCase
 
-# Create your tests here.
+
+class FailTestCase(TestCase):
+
+    def test_always_fail(self):
+        self.fail('This test always fails. For CI/CD testing.')

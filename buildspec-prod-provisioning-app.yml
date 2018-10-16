@@ -1,0 +1,26 @@
+---
+version: 0.2
+
+env:
+  variables:
+    ENVIRONMENT: "dev"
+  parameter-store:
+
+phases:
+  install:
+    commands:
+      - echo "Setup VirtualEnv"
+      - python3 -m venv .venv
+      - source .venv/bin/activate
+      - echo "Install requirements"
+#      - pip3 install -r requirements.txt
+
+  build:
+    commands:
+      - echo "Run unit tests"
+#      - python3 manage.py test
+
+  post-build:
+    commands:
+      - echo "Create an app archive"
+      - ls -la .
