@@ -8,6 +8,8 @@ env:
 phases:
   install:
     commands:
+      - echo "Install system packages"
+      - apt-get install -y zip
       - echo "Setup VirtualEnv"
       - python3 -m venv .venv
       - . .venv/bin/activate
@@ -21,8 +23,9 @@ phases:
 
   post_build:
     commands:
-      - echo "Create an app archive (including .venv dir)"
-      - zip -r app.zip . -x db.sqlite3 \*.git\*
+      - if [ $CODEBUILD_BUILD_SUCCEEDING = 1 ]; then echo "Create an app archive (including .venv dir)"; zip -r app.zip . -x db.sqlite3 \*.git\*; fi
+#      - echo "Create an app archive (including .venv dir)"
+#      - zip -r app.zip . -x db.sqlite3 \*.git\*
 
 artifacts:
   files:
