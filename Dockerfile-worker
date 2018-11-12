@@ -13,7 +13,4 @@ ADD ./requirements.txt /www/requirements.txt
 RUN pip install -r requirements.txt
 ADD . /www
 
-RUN python manage.py migrate --noinput
-
-EXPOSE 8000
 CMD ["python", "manage.py", "qcluster"]

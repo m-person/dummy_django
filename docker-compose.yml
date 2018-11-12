@@ -39,7 +39,7 @@ services:
     - dj_net_1
     environment:
       MYSQL_ROOT_PASSWORD: zzz
-      MYSQL_DATABASE: pn_staging
+      MYSQL_DATABASE: dj_db
     volumes:
     - dj_dbdata_1:/var/lib/mysql
 
