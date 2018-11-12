@@ -22,5 +22,4 @@ contains:
 - elasticsearch
 
 files: deploy/docker/*
-
-Note: the docker-compose doesn't build the web and worker images. They are created on the previous stage (manually or using CodeBuild) and pushed to a docker registry. 
+ 

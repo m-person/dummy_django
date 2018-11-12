@@ -3,51 +3,81 @@ version: '3'
 services:
   nginx:
     image: nginx
-    ports:
-      - "80:80"
-    depends_on:
-      - web
-
-  db:
-    image: mysql:5.7
     restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: zzz
-      MYSQL_DATABASE: pn_db
+    ports:
+    - 80:80
+    - 443:443
+    networks:
+    - dj_net_1
+    volumes:
+    - ./deploy/docker/nginx/pn_staging.conf:/etc/nginx/conf.d/pn_staging.conf:ro
+    - ./deploy/docker/certs/server.key:/etc/nginx/server.key:rw
+    - ./deploy/docker/certs/staging.chained.crt:/etc/nginx/staging.chained.crt:rw
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:5.6.6
-#    container_name: elasticsearch
+    restart: always
+    networks:
+    - dj_net_1
     environment:
-    - cluster.name=es-dev-cluster
+    - cluster.name=es-dj-cluster
     - bootstrap.memory_lock=true
-    - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
+    - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     - discovery.type=single-node
     ulimits:
       memlock:
         soft: -1
         hard: -1
-#    volumes:
-#    - esdata1:/usr/share/elasticsearch/data
-    ports:
-    - 9200:9200
+      mem_limit: 1g
+    volumes:
+    - dj_esdata_1:/usr/share/elasticsearch/data
+
+  db:
+    image: mysql:5.6
+    restart: always
+    networks:
+    - dj_net_1
+    environment:
+      MYSQL_ROOT_PASSWORD: zzz
+      MYSQL_DATABASE: pn_staging
+    volumes:
+    - dj_dbdata_1:/var/lib/mysql
 
   web:
-    # django + gunicorn
     build:
       context: .
       dockerfile: Dockerfile-web
     env_file:
-      - .env_docker
+    - .env_docker
+    networks:
+    - dj_net_1
     ports:
-      - "8000:8000"
+    - 8000:8000
+    restart: on-failure
+    volumes:
+    - ./media_docker:/www/media:rw
     depends_on:
-      - db
-      - elasticsearch
+    - db
+    - elasticsearch
 
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile-worker
+    env_file:
+    - .env_docker
+    networks:
+    - dj_net_1
+    restart: on-failure
+    volumes:
+    - ./media_docker:/www/media:rw
+    depends_on:
+    - db
+    - elasticsearch
 
-#  worker:
-    # django + django-q
+networks:
+  dj_net_1:
 
-#volumes:
-#  esdata1:
+volumes:
+  dj_dbdata_1:
+  dj_esdata_1:
