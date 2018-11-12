@@ -11,19 +11,32 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
+import environ
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
+env = environ.Env()
+ENVIRONMENT = env('ENVIRONMENT', default=None)
+if ENVIRONMENT is None:
+    print('load .env file')
+    ENV_FILE_PATH = os.path.join(BASE_DIR, '.env')
+    environ.Env.read_env(ENV_FILE_PATH if os.path.isfile(ENV_FILE_PATH) else None)
+else:
+    print('use existing env=', ENVIRONMENT)
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
+# print('BASE_DIR', BASE_DIR)
+# print('PROJECT_ROOT', PROJECT_ROOT)
+# print('env', env('HOSTNAME', default='no_hostname'))
+
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '!3ampetb#+t%6_myd5bs_f6u^+ue!=@un#e2@1wc!9=r1olx=2'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DEBUG', default=True)
+# ENVIRONMENT = env('ENVIRONMENT', default='dev')
 
 ALLOWED_HOSTS = []
 
@@ -38,6 +51,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'main.apps.MainConfig',
+    'django_q',
+    'versatileimagefield',
 ]
 
 MIDDLEWARE = [
@@ -120,3 +135,22 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
+
+Q_CLUSTER = {
+    'orm': 'default',
+    'workers': 1,
+    'recycle': 200,
+    'timeout': 60,
+    'compress': True,
+    'save_limit': 500,
+    'queue_limit': 100,
+    'cpu_affinity': 1,
+    'label': 'django-q',
+    'bulk': 10,
+    'cached': False
+}

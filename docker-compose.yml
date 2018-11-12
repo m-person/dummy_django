@@ -1,0 +1,53 @@
+version: '3'
+
+services:
+  nginx:
+    image: nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - web
+
+  db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: zzz
+      MYSQL_DATABASE: pn_db
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:5.6.6
+#    container_name: elasticsearch
+    environment:
+    - cluster.name=es-dev-cluster
+    - bootstrap.memory_lock=true
+    - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
+    - discovery.type=single-node
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+#    volumes:
+#    - esdata1:/usr/share/elasticsearch/data
+    ports:
+    - 9200:9200
+
+  web:
+    # django + gunicorn
+    build:
+      context: .
+      dockerfile: Dockerfile-web
+    env_file:
+      - .env_docker
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - elasticsearch
+
+
+#  worker:
+    # django + django-q
+
+#volumes:
+#  esdata1:

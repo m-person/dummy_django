@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        form label:first-of-type {
+            display: block;
+        }
+        form li {
+            margin: 1rem;
+            list-style: none;
+        }
+        form input[type=text],
+        form textarea {
+            width: 30rem;
+        }
+    </style>
+</head>
+<body>
+<a href="/">Home</a>
+
+<form action="{% url 'article_details' object.slug %}" method="post" enctype="multipart/form-data">
+    {{ form.errors }}
+    {% csrf_token %}
+    {{ form.as_ul }}
+    <input type="submit" value="save">
+</form>
+</body>
+</html>

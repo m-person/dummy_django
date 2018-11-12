@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        form textarea {
+            height: 2rem;
+        }
+        .article-item {
+            display: flex;
+            width: 30rem;
+            justify-content: space-between;
+            border: 1px solid lightgray;
+        }
+    </style>
+</head>
+<body>
+<a href="/">Home</a>
+
+<h1>Articles</h1>
+
+<h2>Add an article</h2>
+<form id="article_form" action="{% url 'article_list' %}" method="post" enctype="multipart/form-data">
+    {{ form.errors }}
+    {% csrf_token %}
+    {{ form.as_table }}
+    <input type="submit" value="Submit">
+</form>
+
+<ul>
+    {% for item in articles %}
+        <li class="article-item">
+            <img src="{{ item.image.thumbnail.100x50 }}" alt="">
+            <a href="{{ item.get_absolute_url }}">{{ item.title }}</a>
+            <form action="{% url 'article_delete' item.slug %}" method="post">
+                {% csrf_token %}
+                <input type="submit" value="X">
+            </form>
+        </li>
+    {% endfor %}
+</ul>
+
+</body>
+</html>

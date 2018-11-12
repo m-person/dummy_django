@@ -1,0 +1,26 @@
+{
+  "variables": {
+    "aws_region": "us-east-1",
+    "aws_ami_name": "custom-ami-{{timestamp}}",
+    "aws_source_ami": "ami-0ac019f4fcb7cb7e6"
+  },
+  "builders": [
+    {
+      "ami_name": "{{user `aws_ami_name`}}",
+      "region": "{{user `aws_region`}}",
+      "source_ami": "{{user `aws_source_ami`}}",
+      "type": "amazon-ebs",
+      "profile": "adminuser",
+      "instance_type": "t2.micro",
+      "ssh_username": "ubuntu",
+      "ami_description": "Customized Ubuntu 18.04 AMI created by Packer",
+      "associate_public_ip_address": "true"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "script": "packer_ami_init.sh"
+    }
+  ]
+}

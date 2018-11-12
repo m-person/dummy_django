@@ -1,10 +1,26 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <style>
+        body {
+            font-family: "Bitstream Vera Sans Mono", Monaco, "Courier New", Courier, monospace;
+            font-size: .7rem;
+        }
+    </style>
 </head>
 <body>
-<h1>The Dummy Django project homepage</h1>
+<h1>The Dummy Django (deployment tests)</h1>
+<h2>settings</h2>
+<ul>
+    {% for k, v in settings %}
+        <li>{{ k }}={{ v }}</li>
+    {% endfor %}
+</ul>
+<p>
+    <a href="{% url 'article_list' %}">Articles</a>
+</p>
 </body>
 </html>
