@@ -1,7 +1,7 @@
 # dummy_django
 The dummy Django site for deployment experiments
 
-Warning: some conf files can be insufficient or broken! This repo is not intended to be used as is in any deployments.
+Warning: some conf files can be insufficient or broken! This repo cannot be used as is!
 
 
 ## some repository content:
