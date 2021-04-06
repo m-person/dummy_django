@@ -1,43 +1,63 @@
 apiVersion: v1
+data:
+  worker.conf: '[supervisorctl]
+
+    username = dummy
+
+    password = dummy
+
+
+    [unix_http_server]
+
+    username = dummy
+
+    password = dummy
+
+
+    [program:gunicorn-pn]
+
+    # healthcheck handler (http request for /ping url)
+
+    command = gunicorn --access-logfile - --log-level error -w 1 -b :8000 propertynest.wsgi:application
+
+    stopasgroup = true
+
+    autostart=true
+
+    autorestart=true
+
+    stderr_logfile=/var/log/gunicorn.err.log
+
+    stdout_logfile=/var/log/gunicorn.out.log
+
+
+    [program:django-q-pn]
+
+    command = python manage.py qcluster
+
+    stopasgroup = true
+
+    autostart=true
+
+    autorestart=true
+
+    stderr_logfile=/var/log/qcluster.err.log
+
+    stdout_logfile=/var/log/qcluster.out.log
+
+    '
 kind: ConfigMap
 metadata:
   name: supervisor-conf
   namespace: main
-data:
-  worker.conf: |
-    [supervisorctl]
-    username = dummy
-    password = dummy
-
-    [unix_http_server]
-    username = dummy
-    password = dummy
-
-    [program:gunicorn-pn]
-    # healthcheck handler (http request for /ping url)
-    command = gunicorn --access-logfile - --log-level error -w 1 -b :8000 propertynest.wsgi:application
-    stopasgroup = true
-    autostart=true
-    autorestart=true
-    stderr_logfile=/var/log/gunicorn.err.log
-    stdout_logfile=/var/log/gunicorn.out.log
-
-    [program:django-q-pn]
-    command = python manage.py qcluster
-    stopasgroup = true
-    autostart=true
-    autorestart=true
-    stderr_logfile=/var/log/qcluster.err.log
-    stdout_logfile=/var/log/qcluster.out.log
-
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: worker
-  namespace: main
   labels:
     app.kubernetes.io/name: worker
+  name: worker
+  namespace: main
 spec:
   replicas: 1
   selector:
@@ -49,55 +69,57 @@ spec:
         app.kubernetes.io/name: worker
     spec:
       containers:
-        - name: worker
-          image: 393199614708.dkr.ecr.us-east-1.amazonaws.com/pn_prod_web:latest
-          imagePullPolicy: Always
-          ports:
-            - name: http
-              containerPort: 8000
-              protocol: TCP
-          resources:
-            requests:
-              memory: "500"
-              cpu: "250m"
-            limits:
-              memory: "1000Mi"
-              cpu: "500m"
-          #          command: [ "/bin/sh" ]
-          #          args: [ "-c", "while true; do echo hello; sleep 10;done" ]
-          command: [ 'supervisord' ]
-          args: [ "-n", "-c", "/etc/supervisor/supervisord.conf" ]
-          envFrom:
-            - secretRef:
-                name: ssm-secrets-prod
-            - configMapRef:
-                name: main-prod
-          volumeMounts:
-            - name: supervisor-conf
-              mountPath: /etc/supervisor/conf.d
-              readOnly: true
-          livenessProbe:
-            httpGet:
-              port: 8000
-              path: /ping
-              httpHeaders:
-                - name: Host
-                  value: www.propertynest.com
-            initialDelaySeconds: 15
-            periodSeconds: 5
-          readinessProbe:
-            httpGet:
-              port: 8000
-              path: /
-              httpHeaders:
-                - name: Host
-                  value: www.propertynest.com
-            initialDelaySeconds: 15
-            periodSeconds: 60
+      - args:
+        - -n
+        - -c
+        - /etc/supervisor/supervisord.conf
+        command:
+        - supervisord
+        envFrom:
+        - secretRef:
+            name: ssm-secrets-prod
+        - configMapRef:
+            name: main-prod
+        image: 393199614708.dkr.ecr.us-east-1.amazonaws.com/pn_prod_web:21.04.06.07.22.55
+        imagePullPolicy: Always
+        livenessProbe:
+          httpGet:
+            httpHeaders:
+            - name: Host
+              value: www.propertynest.com
+            path: /ping
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 5
+        name: worker
+        ports:
+        - containerPort: 8000
+          name: http
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            httpHeaders:
+            - name: Host
+              value: www.propertynest.com
+            path: /
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 60
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1000Mi
+          requests:
+            cpu: 250m
+            memory: '500'
+        volumeMounts:
+        - mountPath: /etc/supervisor/conf.d
+          name: supervisor-conf
+          readOnly: true
       volumes:
-        - name: supervisor-conf
-          configMap:
-            name: supervisor-conf
-            items:
-              - key: worker.conf
-                path: worker.conf
+      - configMap:
+          items:
+          - key: worker.conf
+            path: worker.conf
+          name: supervisor-conf
+        name: supervisor-conf

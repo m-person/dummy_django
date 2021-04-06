@@ -1,10 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: web
-  namespace: main
   labels:
     app.kubernetes.io/name: web
+  name: web
+  namespace: main
 spec:
   replicas: 2
   selector:
@@ -16,44 +16,54 @@ spec:
         app.kubernetes.io/name: web
     spec:
       containers:
-        - name: web
-          image: 393199614708.dkr.ecr.us-east-1.amazonaws.com/pn_prod_web:latest
-          imagePullPolicy: Always
-          ports:
-            - name: http
-              containerPort: 8000
-              protocol: TCP
-          resources:
-            requests:
-              memory: "500"
-              cpu: "250m"
-            limits:
-              memory: "1000Mi"
-              cpu: "500m"
-#          command: [ "/bin/sh" ]
-#          args: [ "-c", "while true; do echo hello; sleep 10;done" ]
-          command: [ 'gunicorn' ]
-          args: [ '--access-logfile', '/dev/null', '--log-level', 'error', '-w', '3', '-t', '120', '-b', ':8000', 'propertynest.wsgi:application' ]
-          envFrom:
-            - secretRef:
-                name: ssm-secrets-prod
-            - configMapRef:
-                name: main-prod
-          livenessProbe:
-            httpGet:
-              port: 8000
-              path: /ping
-              httpHeaders:
-                - name: Host
-                  value: www.propertynest.com
-            initialDelaySeconds: 15
-            periodSeconds: 5
-          readinessProbe:
-            httpGet:
-              port: 8000
-              path: /
-              httpHeaders:
-                - name: Host
-                  value: www.propertynest.com
-            initialDelaySeconds: 15
-            periodSeconds: 60
+      - args:
+        - --access-logfile
+        - /dev/null
+        - --log-level
+        - error
+        - -w
+        - '3'
+        - -t
+        - '120'
+        - -b
+        - :8000
+        - propertynest.wsgi:application
+        command:
+        - gunicorn
+        envFrom:
+        - secretRef:
+            name: ssm-secrets-prod
+        - configMapRef:
+            name: main-prod
+        image: 393199614708.dkr.ecr.us-east-1.amazonaws.com/pn_prod_web:21.04.06.07.22.55
+        imagePullPolicy: Always
+        livenessProbe:
+          httpGet:
+            httpHeaders:
+            - name: Host
+              value: www.propertynest.com
+            path: /ping
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 5
+        name: web
+        ports:
+        - containerPort: 8000
+          name: http
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            httpHeaders:
+            - name: Host
+              value: www.propertynest.com
+            path: /
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 60
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1000Mi
+          requests:
+            cpu: 250m
+            memory: '500'
